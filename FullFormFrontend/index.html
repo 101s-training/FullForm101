@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" src = "style.css">
+<title>Full Form</title>
+
+</head>
+<body>
+    <script src = "/index.js"></script>
+
+<form id="demoForm" novalidate>
+  <h1>Registration form</h1>
+  <p class="hint">Fields marked * are required.</p>
+
+  <fieldset>
+    <legend>Text-based inputs</legend>
+    <div class="row">
+      <div class="field">
+        <label for="name">Full name *</label>
+        <input type="text" id="name" name="name" required minlength="2" placeholder="Asha Kumar">
+        <div class="error-msg"></div>
+      </div>
+      <div class="field">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" required placeholder="asha@example.com">
+        <div class="error-msg"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="password">Password * (min 8 chars)</label>
+        <input type="password" id="password" name="password" required minlength="8">
+        <div class="error-msg"></div>
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" pattern="[0-9+\s\-]{7,15}" placeholder="+91 98765 43210">
+        <div class="error-msg"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="website">Website</label>
+      <input type="url" id="website" name="website" placeholder="https://example.com">
+      <div class="error-msg"></div>
+    </div>
+    <div class="field">
+      <label for="search">Search</label>
+      <input type="search" id="search" name="search" placeholder="Type a keyword">
+    </div>
+    <div class="field">
+      <label for="bio">About you</label>
+      <textarea id="bio" name="bio" rows="4" maxlength="300" placeholder="A few lines about yourself"></textarea>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Age, fav colour, slider ip</legend>
+    <div class="row">
+      <div class="field">
+        <label for="age">Age</label>
+        <input type="number" id="age" name="age" min="16" max="100" step="1">
+        <div class="error-msg"></div>
+      </div>
+      <div class="field">
+        <label for="color">Favourite colour</label>
+        <input type="color" id="color" name="color" value="#2457d6">
+      </div>
+      <div class = "field">
+        <label for = "color">Hated Color</label>
+        <input type ="color" id = "hatedColor" name="hatedColor" value="green">
+
+      </div>
+    </div>
+    <div class="field">
+      <label for="skill">Skill level: <output id="skillOut">5</output>/10</label>
+      <input type="range" id="skill" name="skill" min="0" max="10" value="5">
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Date and time</legend>
+    <div class="row">
+      <div class="field"><label for="dob">Date of birth</label><input type="date" id="dob" name="dob"></div>
+      <div class="field"><label for="slot">Preferred call time</label><input type="time" id="slot" name="slot"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="month">Graduation month</label><input type="month" id="month" name="month"></div>
+      <div class="field"><label for="week">Week</label><input type="week" id="week" name="week"></div>
+    </div>
+    <div class="field"><label for="meeting">Meeting (date + time)</label><input type="datetime-local" id="meeting" name="meeting"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Choices</legend>
+    <div class="field">
+      <label for="country">Country *</label>
+      <select id="country" name="country" required>
+        <option value="">Select one</option>
+        <option>India</option>
+        <option>United States</option>
+        <option>United Kingdom</option>
+        <option>Other</option>
+      </select>
+      <div class="error-msg"></div>
+    </div>
+    <div class="field">
+      <label for="languages">Languages (hold Ctrl/Cmd to pick several)</label>
+      <select id="languages" name="languages" multiple size="4">
+        <option>Tamil</option><option>English</option><option>Hindi</option><option>Telugu</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="framework">Favourite framework (datalist: type or pick)</label>
+      <input list="frameworks" id="framework" name="framework">
+      <datalist id="frameworks">
+        <option value="React"><option value="Vue"><option value="Angular"><option value="Svelte">
+      </datalist>
+    </div>
+    <div class="field">
+      <span style="font-size:.92rem">Gender *</span>
+      <div class="inline"><input type="radio" id="g1" name="gender" value="female" required><label for="g1">Female</label></div>
+      <div class="inline"><input type="radio" id="g2" name="gender" value="male"><label for="g2">Male</label></div>
+      <div class="inline"><input type="radio" id="g3" name="gender" value="other"><label for="g3">Prefer not to say</label></div>
+      <div class="error-msg"></div>
+    </div>
+    <div class="field">
+      <span style="font-size:.92rem">Interests</span>
+      <div class="inline"><input type="checkbox" id="i1" name="interests" value="web"><label for="i1">Web</label></div>
+      <div class="inline"><input type="checkbox" id="i2" name="interests" value="mobile"><label for="i2">Mobile</label></div>
+      <div class="inline"><input type="checkbox" id="i3" name="interests" value="data"><label for="i3">Data</label></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Files and hidden data</legend>
+    <div class="field">
+      <label for="resume">Resume (PDF, max 2 MB)</label>
+      <input type="file" id="resume" name="resume" accept=".pdf">
+      <div class="error-msg"></div>
+    </div>
+    <div class="field">
+      <label for="photos">Photos (multiple images)</label>
+      <input type="file" id="photos" name="photos" accept="image/*" multiple>
+    </div>
+    <input type="hidden" id="source" name="source" value="demo-form">
+  </fieldset>
+
+  <div class="inline">
+    <input type="checkbox" id="terms" name="terms" required>
+    <label for="terms">I agree to the terms *</label>
+  </div>
+  <div class="error-msg" id="termsErr"></div>
+
+  <div class="buttons">
+    <button type="submit">Submit</button>
+    <button type="reset">Reset</button>
+  </div>
+</form>
+
+<pre id="output">Submitted data will appear here.</pre>
+
+</body>
+</html>
