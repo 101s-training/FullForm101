@@ -1,10 +1,12 @@
 // Determine backend base URL: works both when served directly from Spring Boot (:8080)
 // and when opened via static live-server / file protocol
-const API_BASE = window.location.origin.includes(':8080')
-    ? window.location.origin
-    : (window.location.protocol === 'file:' || window.location.port !== '8080')
-        ? 'http://localhost:8080'
-        : '';
+const isLocalDevServer =
+    ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+    window.location.port !== '8080';
+
+const API_BASE = (window.location.protocol === 'file:' || isLocalDevServer)
+    ? 'http://localhost:8080'   // opened via file:// or a local live-server
+    : '';                       // same origin as the page (Spring Boot or Render)
 
 const form = document.getElementById('demoForm');
 const skill = document.getElementById('skill');
