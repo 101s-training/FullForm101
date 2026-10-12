@@ -28,11 +28,22 @@ public class FileStorageService {
     }
 
     public String store(MultipartFile file, String folder, Set<String> allowedTypes) throws IOException {
-        if (file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }
-        if (file.getContentType() == null || !allowedTypes.contains(file.getContentType())) {
-            throw new IllegalArgumentException("Unsupported file type: " + file.getContentType());
+        String contentType = file.getContentType();
+        if (allowedTypes != null && !allowedTypes.isEmpty() && contentType != null) {
+            String lowerType = contentType.toLowerCase();
+            boolean matched = allowedTypes.contains(lowerType) ||
+                    allowedTypes.stream().anyMatch(t -> {
+                        if (t.endsWith("/*")) {
+                            return lowerType.startsWith(t.substring(0, t.length() - 1));
+                        }
+                        return false;
+                    });
+            if (!matched) {
+                throw new IllegalArgumentException("Unsupported file type: " + contentType);
+            }
         }
 
         String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
@@ -46,8 +57,27 @@ public class FileStorageService {
         return folder + "/" + filename;
     }
 
+    public String storeText(String content, String folder, String filename) throws IOException {
+        Path dir = root.resolve(folder);
+        Files.createDirectories(dir);
+        Path target = dir.resolve(filename);
+        Files.writeString(target, content, java.nio.charset.StandardCharsets.UTF_8);
+        return folder + "/" + filename;
+    }
+
+    public String readText(String relativePath) throws IOException {
+        if (relativePath == null || relativePath.isBlank()) return null;
+        String cleanPath = cleanRelativePath(relativePath);
+        Path file = root.resolve(cleanPath).normalize();
+        if (!file.startsWith(root) || !Files.exists(file)) {
+            return null;
+        }
+        return Files.readString(file, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     public Resource load(String relativePath) throws MalformedURLException {
-        Path file = root.resolve(relativePath).normalize();
+        String cleanPath = cleanRelativePath(relativePath);
+        Path file = root.resolve(cleanPath).normalize();
         if (!file.startsWith(root)) {                       // blocks ../../ tricks
             throw new IllegalArgumentException("Invalid path");
         }
@@ -60,10 +90,28 @@ public class FileStorageService {
     }
 
     public void delete(String relativePath) throws IOException {
-        if (relativePath == null) return;
-        Path file = root.resolve(relativePath).normalize();
+        if (relativePath == null || relativePath.isBlank()) return;
+        String cleanPath = cleanRelativePath(relativePath);
+        Path file = root.resolve(cleanPath).normalize();
         if (file.startsWith(root)) {
             Files.deleteIfExists(file);
         }
+    }
+
+    public Path getRoot() {
+        return root;
+    }
+
+    private String cleanRelativePath(String path) {
+        if (path.startsWith("/uploads/")) {
+            return path.substring("/uploads/".length());
+        }
+        if (path.startsWith("uploads/")) {
+            return path.substring("uploads/".length());
+        }
+        if (path.startsWith("/api/v1/files/")) {
+            return path.substring("/api/v1/files/".length());
+        }
+        return path;
     }
 }

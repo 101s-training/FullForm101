@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>FullForm</title>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <div class="logo-badge">FF</div>
+        <div class="logo-title">
+          <h1>Actor Application Portal</h1>
+          <p>This is an Actor Audition Form</p>
+        </div>
+      </div>
+      <nav class="nav-tabs">
+        <button type="button" class="tab-btn active" id="tabSubmitBtn" onclick="switchTab('submit')">
+          <span>Actor Audition Form</span>
+        </button>
+        <button type="button" class="tab-btn" id="tabViewBtn" onclick="switchTab('view')">
+          <span>View Submissions</span>
+          <span class="badge-count" id="submissionsCount">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- form tab -->
+    <section id="submitTab" class="tab-content active">
+      <form id="demoForm" novalidate enctype="multipart/form-data">
+        <div class="form-header">
+          <h2>Registration & Media Form</h2>
+          <p>Submit Writeups, Profile Pictures and  Audition Tapes.</p>
+        </div>
+
+        
+        <fieldset>
+          <legend><span>👤</span> Personal & Contact Details</legend>
+          <div class="row">
+            <div class="field">
+              <label for="name">Full name *</label>
+              <input type="text" id="name" name="name" required minlength="2" placeholder="e.g. Asha Kumar">
+              <div class="error-msg"></div>
+            </div>
+            <div class="field">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required placeholder="e.g. asha@example.com">
+              <div class="error-msg"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="password">Password * (min 8 chars)</label>
+              <input type="password" id="password" name="password" required minlength="8" placeholder="••••••••">
+              <div class="error-msg"></div>
+            </div>
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" pattern="[0-9+\s\-]{7,15}" placeholder="+91 98765 43210">
+              <div class="error-msg"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="website">Website</label>
+              <input type="url" id="website" name="website" placeholder="https://example.com(if u have one)">
+              <div class="error-msg"></div>
+            </div>
+            
+          </div>
+          <div class="field">
+            <label for="bio">About you and your acting journey</label>
+            <textarea id="bio" name="bio" rows="3" maxlength="150" placeholder="A few lines about yourself(in 150 words)..."></textarea>
+          </div>
+        </fieldset>
+
+        
+        <fieldset>
+          <legend><span>🎨</span> Age, Colors & Skill</legend>
+          <div class="row">
+            <div class="field">
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" min="16" max="100" step="1" placeholder="25">
+              <div class="error-msg"></div>
+            </div>
+            <div class="field">
+              <label for="color">Favourite colour</label>
+              <input type="color" id="color" name="color" value="#2457d6">
+            </div>
+            <div class="field">
+              <label for="hatedColor">Colour you hate</label>
+              <input type="color" id="hatedColor" name="hatedColor" value="#ef4444">
+            </div>
+          </div>
+          <div class="field">
+            <label for="skill">How confident are you about your acting skills ?: <output id="skillOut">5</output>/10</label>
+            <input type="range" id="skill" name="skill" min="0" max="10" value="5">
+          </div>
+        </fieldset>
+
+        
+        <fieldset>
+          <legend><span>📅</span> Book your In-person Interview with us</legend>
+          <div class="row">
+            <div class="field">
+              <label for="dob">Date of birth</label>
+              <input type="date" id="dob" name="dob">
+            </div>
+            <div class="field">
+              <label for="slot">Preferred call time</label>
+              <input type="time" id="slot" name="slot">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="month">Graduation month</label>
+              <input type="month" id="month" name="month">
+            </div>
+            <div class="field">
+              <label for="week">Available Week</label>
+              <input type="week" id="week" name="week">
+            </div>
+          </div>
+          <div class="field">
+            <label for="meeting"> Audition(date + time)</label>
+            <input type="datetime-local" id="meeting" name="meeting">
+          </div>
+        </fieldset>
+
+        <!-- 4. Choices -->
+        <fieldset>
+          <legend><span>🎯</span> Preferences & Choices</legend>
+          <div class="row">
+            <div class="field">
+              <label for="country">Country *</label>
+              <select id="country" name="country" required>
+                <option value="">Select country</option>
+                <option value="India">India</option>
+                <option value="United States">United States</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Canada">Canada</option>
+                <option value="Germany">Germany</option>
+                <option value="Australia">Australia</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="error-msg"></div>
+            </div>
+            <div class="field">
+              <label for="framework"> Most Favourite Field? </label>
+              <input list="frameworks" id="framework" name="framework" placeholder="Type or pick...">
+              <datalist id="frameworks">
+                <option value="Acting">
+                <option value="Voice Acting">
+                <option value="Mimicry">
+                <option value="Comedy">
+              </datalist>
+            </div>
+          </div>
+          <div class="field">
+            <label for="languages">Languages (hold Ctrl / Cmd to pick multiple)</label>
+            <select id="languages" name="languages" multiple size="4">
+              <option value="Tamil">Tamil</option>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Telugu">Telugu</option>
+              <option value="Malayalam">Malayalam</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Gender *</label>
+            <div class="inline"><input type="radio" id="g1" name="gender" value="female" required><label for="g1">Female</label></div>
+            <div class="inline"><input type="radio" id="g2" name="gender" value="male"><label for="g2">Male</label></div>
+            <div class="inline"><input type="radio" id="g3" name="gender" value="other"><label for="g3">Prefer not to say</label></div>
+            <div class="error-msg"></div>
+          </div>
+          <div class="field">
+            <label>Interests</label>
+            <div class="inline"><input type="checkbox" id="i1" name="interests" value="Hero"><label for="i1">Hero</label></div>
+            <div class="inline"><input type="checkbox" id="i2" name="interests" value="SupportingActor"><label for="i2">Supporting Actor</label></div>
+            <div class="inline"><input type="checkbox" id="i3" name="interests" value="Comedian"><label for="i3">Comedian</label></div>
+            <div class="inline"><input type="checkbox" id="i4" name="interests" value="Video&AudioProduct"><label for="i4">Video & Audio Production</label></div>
+          </div>
+        </fieldset>
+
+        
+        <fieldset>
+          <legend><span>📁</span> Upload Profile Angles,Audition Video & Resume</legend>
+
+          
+          <div class="field">
+            <label for="photo">Photo / Profile Image (JPEG, PNG, WebP)</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="photo" name="photo" accept="image/*">
+            </div>
+            <div class="preview-container">
+              <img id="photoPreview" class="preview-thumb" alt="Selected Image Preview">
+            </div>
+            <div class="error-msg"></div>
+          </div>
+
+          
+          <div class="field">
+            <label for="video">Video (MP4, WebM, MOV - saved locally)</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="video" name="video" accept="video/*">
+            </div>
+            <div class="preview-container">
+              <video id="videoPreview" class="preview-video" controls></video>
+            </div>
+            <div class="error-msg"></div>
+          </div>
+
+          
+          <div class="field">
+            <label for="resume">Resume / Document (PDF, max 10MB)</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,application/pdf">
+            </div>
+            <div class="error-msg"></div>
+          </div>
+        </fieldset>
+
+        <div class="terms-container">
+          <div class="inline">
+            <input type="checkbox" id="terms" name="terms" required>
+            <label for="terms">I agree to save this information and local media files *</label>
+          </div>
+          <div class="error-msg" id="termsErr"></div>
+        </div>
+
+        <div class="buttons">
+          <button type="reset" id="resetBtn">Clear Form</button>
+          <button type="submit" id="submitBtn">
+            <span id="submitSpinner" class="spinner" style="display: none;"></span>
+            <span id="submitText">Submit & Save</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- view submission tab -->
+    <section id="viewTab" class="tab-content">
+      <div class="viewer-container">
+        
+        <!-- Left: Submissions List -->
+        <aside class="sidebar-panel">
+          <div class="search-bar">
+            <input type="text" id="filterInput" placeholder="🔍 Search by name or email..." oninput="filterSubmissions()">
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:0.85rem; color:var(--muted);" id="listCountLabel">0 submissions</span>
+            <button type="button" class="tab-btn" style="padding:4px 10px; font-size:0.8rem;" onclick="loadSubmissions()">🔄 Refresh</button>
+          </div>
+          <div class="submissions-list" id="submissionsList">
+            <!-- Dynamically populated -->
+          </div>
+        </aside>
+
+        <!-- Right: Selected Submission Details & Media Playback -->
+        <article class="detail-panel" id="detailPanel">
+          <div id="noSelectionMsg" class="empty-state">
+            <div class="empty-icon"></div>
+            <h3>No Submission Selected</h3>
+            <p>Select a submission from the list on the left to view text details, images, video playback, and local file paths.</p>
+          </div>
+
+          <div id="selectionContent" style="display: none;">
+            <!-- Header -->
+            <div class="detail-header">
+              <div class="detail-title">
+                <h3 id="detailName">John Doe</h3>
+                <div class="meta">
+                  <span id="detailEmail">john@example.com</span>
+                  <span>•</span>
+                  <span id="detailDate">Oct 9, 2026</span>
+                  <span>•</span>
+                  <span class="item-badge" id="detailStatus">SUBMITTED</span>
+                </div>
+              </div>
+              <div class="header-actions">
+                <button type="button" class="btn-danger" id="deleteBtn" onclick="deleteCurrentSubmission()">🗑️ Delete</button>
+              </div>
+            </div>
+
+            <!-- Local Storage Info Card -->
+            <div class="storage-card">
+              <div class="storage-header">
+                <span class="storage-badge">💾 Saved in Local File System</span>
+                <span style="font-size:0.78rem; color:#93c5fd;">Spring Boot Local Storage</span>
+              </div>
+              <div class="storage-paths">
+                <div class="storage-row">
+                  <span class="storage-label">Local Text File:</span>
+                  <span id="pathTextFile">uploads/submissions/...</span>
+                </div>
+                <div class="storage-row">
+                  <span class="storage-label">Image File:</span>
+                  <span id="pathImageFile">uploads/images/...</span>
+                </div>
+                <div class="storage-row">
+                  <span class="storage-label">Video File:</span>
+                  <span id="pathVideoFile">uploads/videos/...</span>
+                </div>
+              </div>
+            </div>
+
+            
+            <div class="media-showcase">
+              <
+              <div class="media-card" id="cardImage">
+                <div class="media-card-header">
+                  <span>🖼️ Saved Image</span>
+                  <span id="imageStatusBadge" class="item-badge">Active</span>
+                </div>
+                <div class="media-content">
+                  <img id="detailImage" src="" alt="Submission Photo">
+                  <span id="noImageMsg" style="display:none; color:var(--muted); font-size:0.85rem;">No image uploaded</span>
+                </div>
+                <div class="media-card-footer" id="detailImageLink">
+                  
+                </div>
+              </div>
+
+              
+              <div class="media-card" id="cardVideo">
+                <div class="media-card-header">
+                  <span> Saved Video Player</span>
+                  <span id="videoStatusBadge" class="item-badge">Local Stream</span>
+                </div>
+                <div class="media-content">
+                  <video id="detailVideo" controls preload="metadata"></video>
+                  <span id="noVideoMsg" style="display:none; color:var(--muted); font-size:0.85rem;">No video uploaded</span>
+                </div>
+                <div class="media-card-footer" id="detailVideoLink">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- Text Data Sections -->
+            <div class="info-section">
+              <div class="section-title">Personal & Contact Information</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Full Name</div>
+                  <div class="info-val" id="textName">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Email</div>
+                  <div class="info-val" id="textEmail">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Phone</div>
+                  <div class="info-val" id="textPhone">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Website</div>
+                  <div class="info-val" id="textWebsite">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Country</div>
+                  <div class="info-val" id="textCountry">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Gender</div>
+                  <div class="info-val" id="textGender">-</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <div class="section-title">Schedule & Preferences</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Age</div>
+                  <div class="info-val" id="textAge">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Date of Birth</div>
+                  <div class="info-val" id="textDob">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Call Time</div>
+                  <div class="info-val" id="textSlot">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Graduation Month</div>
+                  <div class="info-val" id="textMonth">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Available Week</div>
+                  <div class="info-val" id="textWeek">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Meeting Date/Time</div>
+                  <div class="info-val" id="textMeeting">-</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <div class="section-title">Skills & Interests</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Skill Level</div>
+                  <div class="info-val" id="textSkill">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Framework</div>
+                  <div class="info-val" id="textFramework">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Languages</div>
+                  <div class="info-val" id="textLanguages">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Interests</div>
+                  <div class="info-val" id="textInterests">-</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Favourite Color</div>
+                  <div class="info-val">
+                    <span class="color-chip">
+                      <span id="dotFav" class="color-dot"></span>
+                      <span id="textFavColor">-</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Hated Color</div>
+                  <div class="info-val">
+                    <span class="color-chip">
+                      <span id="dotHate" class="color-dot"></span>
+                      <span id="textHatedColor">-</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bio -->
+            <div class="info-section">
+              <div class="section-title">About / Bio</div>
+              <div class="info-item" style="grid-column: 1 / -1;">
+                <div class="info-val" id="textBio" style="white-space: pre-wrap;">-</div>
+              </div>
+            </div>
+
+            <!-- Local JSON File Viewer -->
+            <div class="info-section">
+              <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span> Raw Content of Saved Local Text File</span>
+                <span id="localFileNameBadge" style="font-size:0.75rem; color:var(--muted);"></span>
+              </div>
+              <div class="raw-json-box">
+                <pre id="rawJsonContent">Loading file content...</pre>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast"></div>
+
+  <script src="index.js"></script>
+</body>
+</html>

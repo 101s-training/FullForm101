@@ -38,6 +38,44 @@ public class ProspectProfile {
 
     private String audioUrl;
 
+    private String phone;
+
+    private String website;
+
+    private String searchQuery;
+
+    private Integer age;
+
+    private String favouriteColor;
+
+    private String hatedColor;
+
+    private Integer skillLevel;
+
+    private String dob;
+
+    private String slot;
+
+    private String graduationMonth;
+
+    private String week;
+
+    private String meetingTime;
+
+    private String country;
+
+    private String languages;
+
+    private String framework;
+
+    private String gender;
+
+    private String interests;
+
+    private String resumeUrl;
+
+    private String localDataFilePath;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuditionStatus status = AuditionStatus.DRAFT;
