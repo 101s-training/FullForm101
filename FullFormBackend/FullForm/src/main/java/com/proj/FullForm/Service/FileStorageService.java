@@ -22,7 +22,7 @@ public class FileStorageService {
 
     private final Path root;
 
-    public FileStorageService(@Value("${app.upload-dir}") String dir) throws IOException {
+    public FileStorageService(@Value("${app.upload-dir:uploads}") String dir) throws IOException {
         this.root = Paths.get(dir).toAbsolutePath().normalize();
         Files.createDirectories(root);
     }
