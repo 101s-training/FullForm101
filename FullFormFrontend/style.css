@@ -406,6 +406,8 @@ button:disabled {
   bottom: 20px;
   z-index: 1000;
 
+  max-width: 480px;
+  word-break: break-word;
   padding: 12px 18px;
 
   border: var(--border);
@@ -841,3 +843,222 @@ button:disabled {
     flex-wrap: wrap;
   }
 }
+
+/* =========================================================
+   20. AUTH WINDOW & MODAL
+   ========================================================= */
+
+body.auth-locked .main-wrapper,
+body.auth-locked .app-header {
+  filter: blur(5px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.auth-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.auth-window {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border: var(--border);
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: authPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes authPop {
+  from {
+    transform: scale(0.92) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.auth-header {
+  text-align: center;
+}
+
+.auth-badge {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.auth-header h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.auth-header p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.auth-tabs {
+  display: flex;
+  border: 2px solid var(--ink);
+  background: #f1f5f9;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.auth-tab-btn.active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.auth-alert {
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 2px solid var(--ink);
+  background: #ffe4e6;
+  color: #9f1239;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.auth-alert.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: var(--accent);
+  color: var(--ink);
+  border: var(--border);
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-footer-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 12px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-btn:hover {
+  color: #1e40af;
+}
+
+/* Header Session Bar */
+.header-right-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.user-session-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 6px 12px;
+}
+
+.user-badge {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--ink);
+}
+
+.logout-btn {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  background: var(--err);
+  color: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.logout-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.logout-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}

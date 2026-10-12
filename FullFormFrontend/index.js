@@ -17,11 +17,202 @@ const videoPreview = document.getElementById('videoPreview');
 let currentSubmissions = [];
 let selectedSubmissionId = null;
 
+// Auth State
+let currentAuthUser = null;
+let currentAuthMode = 'login'; // 'login' or 'register'
+
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
+    initAuthState();
     initLiveListeners();
-    loadSubmissions();
 });
+
+/* =========================================================
+   AUTHENTICATION WINDOW LOGIC
+   ========================================================= */
+
+function initAuthState() {
+    const savedUser = sessionStorage.getItem('fullform_auth_user');
+    if (savedUser) {
+        try {
+            currentAuthUser = JSON.parse(savedUser);
+            if (currentAuthUser && currentAuthUser.email) {
+                unlockApplication(currentAuthUser.email);
+                loadSubmissions();
+                return;
+            }
+        } catch (e) {
+            sessionStorage.removeItem('fullform_auth_user');
+        }
+    }
+
+    // If not authenticated, keep application locked and show window
+    lockApplication();
+}
+
+function lockApplication() {
+    document.body.classList.add('auth-locked');
+    const overlay = document.getElementById('authOverlay');
+    if (overlay) overlay.classList.add('active');
+    const sessionBar = document.getElementById('userSessionBar');
+    if (sessionBar) sessionBar.style.display = 'none';
+}
+
+function unlockApplication(email) {
+    document.body.classList.remove('auth-locked');
+    const overlay = document.getElementById('authOverlay');
+    if (overlay) overlay.classList.remove('active');
+
+    const sessionBar = document.getElementById('userSessionBar');
+    const userBadge = document.getElementById('userEmailBadge');
+    if (sessionBar && userBadge) {
+        userBadge.textContent = `👤 ${email}`;
+        sessionBar.style.display = 'flex';
+    }
+}
+
+function setAuthMode(mode) {
+    currentAuthMode = mode;
+    const tabLogin = document.getElementById('authTabLogin');
+    const tabRegister = document.getElementById('authTabRegister');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const authBtnText = document.getElementById('authBtnText');
+    const authToggleHint = document.getElementById('authToggleHint');
+    const authToggleBtn = document.getElementById('authToggleBtn');
+    const alertBox = document.getElementById('authAlert');
+
+    if (alertBox) alertBox.style.display = 'none';
+    clearAuthErrors();
+
+    if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        authTitle.textContent = 'Actor Portal Sign In';
+        authSubtitle.textContent = 'Enter your email and password to enter the application.';
+        authBtnText.textContent = 'Sign In & Enter Application';
+        authToggleHint.textContent = 'New to the portal?';
+        authToggleBtn.textContent = 'Register here';
+    } else {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        authTitle.textContent = 'Register New Actor';
+        authSubtitle.textContent = 'Create your account with email and password to enter.';
+        authBtnText.textContent = 'Create Account & Enter Application';
+        authToggleHint.textContent = 'Already registered?';
+        authToggleBtn.textContent = 'Sign In here';
+    }
+}
+
+function toggleAuthMode() {
+    setAuthMode(currentAuthMode === 'login' ? 'register' : 'login');
+}
+
+function clearAuthErrors() {
+    const emailErr = document.getElementById('authEmailErr');
+    const passErr = document.getElementById('authPasswordErr');
+    if (emailErr) emailErr.textContent = '';
+    if (passErr) passErr.textContent = '';
+    const emailInput = document.getElementById('authEmail');
+    const passInput = document.getElementById('authPassword');
+    if (emailInput) emailInput.classList.remove('invalid');
+    if (passInput) passInput.classList.remove('invalid');
+}
+
+async function handleAuthSubmit(e) {
+    e.preventDefault();
+    clearAuthErrors();
+
+    const emailInput = document.getElementById('authEmail');
+    const passInput = document.getElementById('authPassword');
+    const alertBox = document.getElementById('authAlert');
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const spinner = document.getElementById('authSpinner');
+    const btnText = document.getElementById('authBtnText');
+
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passInput.value;
+
+    let hasErr = false;
+    if (!email || !email.includes('@')) {
+        document.getElementById('authEmailErr').textContent = 'Please enter a valid email address.';
+        emailInput.classList.add('invalid');
+        hasErr = true;
+    }
+    if (!password || password.length < 6) {
+        document.getElementById('authPasswordErr').textContent = 'Password must be at least 6 characters.';
+        passInput.classList.add('invalid');
+        hasErr = true;
+    }
+
+    if (hasErr) return;
+
+    submitBtn.disabled = true;
+    spinner.style.display = 'inline-block';
+    const originalText = btnText.textContent;
+    btnText.textContent = currentAuthMode === 'login' ? 'Verifying Credentials...' : 'Creating Account...';
+    if (alertBox) alertBox.style.display = 'none';
+
+    try {
+        const endpoint = currentAuthMode === 'login' ? '/api/v1/auth/login' : '/api/v1/auth/register';
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (ignored) {}
+
+        if (!response.ok) {
+            const errMsg = data.message || (currentAuthMode === 'login' ? 'Invalid email or password.' : 'Failed to register account.');
+            throw new Error(errMsg);
+        }
+
+        // Successfully authenticated!
+        currentAuthUser = { email: email };
+        sessionStorage.setItem('fullform_auth_user', JSON.stringify(currentAuthUser));
+
+        unlockApplication(email);
+        showToast(currentAuthMode === 'login' ? `Welcome back, ${email}!` : `Account created! Welcome, ${email}!`, 'success');
+
+        // Reset auth form inputs
+        document.getElementById('authForm').reset();
+
+        // Load submissions into the portal
+        loadSubmissions();
+
+    } catch (err) {
+        if (alertBox) {
+            alertBox.textContent = err.message;
+            alertBox.style.display = 'block';
+        }
+        showToast(err.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = originalText;
+    }
+}
+
+function handleLogout() {
+    if (confirm('Are you sure you want to sign out?')) {
+        sessionStorage.removeItem('fullform_auth_user');
+        currentAuthUser = null;
+        lockApplication();
+        setAuthMode('login');
+        document.getElementById('authForm').reset();
+        showToast('You have signed out successfully.', 'info');
+    }
+}
+
+/* =========================================================
+   PORTAL TAB & UI MANAGEMENT
+   ========================================================= */
 
 // Tab Switcher
 function switchTab(tab) {
@@ -83,7 +274,7 @@ function setError(el, message) {
     el.classList.toggle('invalid', Boolean(message));
 }
 
-// Form validation
+// Form validation (Strictly validates ProspectProfile fields)
 function validateForm() {
     let ok = true;
 
@@ -105,15 +296,12 @@ function validateForm() {
 
     // Radio Gender
     const genderChosen = form.querySelector('input[name=gender]:checked');
-    const genderBox = form.querySelector('input[name=gender]').closest('.field').querySelector('.error-msg');
-    genderBox.textContent = genderChosen ? '' : 'Please select a gender.';
+    const genderField = form.querySelector('input[name=gender]')?.closest('.field');
+    const genderBox = genderField?.querySelector('.error-msg');
+    if (genderBox) {
+        genderBox.textContent = genderChosen ? '' : 'Please select a gender.';
+    }
     if (!genderChosen) ok = false;
-
-    // Terms
-    const terms = document.getElementById('terms');
-    const termsErr = document.getElementById('termsErr');
-    termsErr.textContent = terms.checked ? '' : 'You must accept the terms.';
-    if (!terms.checked) ok = false;
 
     return ok;
 }
@@ -121,6 +309,13 @@ function validateForm() {
 // Submit Form handler
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    if (!currentAuthUser || !currentAuthUser.email) {
+        lockApplication();
+        showToast('Please sign in before submitting.', 'error');
+        return;
+    }
+
     if (!validateForm()) {
         showToast('Please correct form errors before submitting', 'error');
         return;
@@ -136,6 +331,9 @@ form.addEventListener('submit', async (e) => {
 
     const formData = new FormData(form);
 
+    // Automatically associate the submission with the authenticated user's email
+    formData.append('email', currentAuthUser.email);
+
     try {
         const response = await fetch(`${API_BASE}/api/v1/submissions`, {
             method: 'POST',
@@ -143,12 +341,24 @@ form.addEventListener('submit', async (e) => {
         });
 
         if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(errText || 'Failed to submit form');
+            let errorMsg = 'Failed to submit form';
+            try {
+                const errJson = await response.json();
+                errorMsg = errJson.message || errJson.error || errorMsg;
+            } catch (ignored) {
+                try {
+                    const rawText = await response.text();
+                    errorMsg = rawText ? rawText.substring(0, 150) : errorMsg;
+                } catch (ignored2) {}
+            }
+            if (errorMsg.length > 200) {
+                errorMsg = errorMsg.substring(0, 197) + '...';
+            }
+            throw new Error(errorMsg);
         }
 
         const savedData = await response.json();
-        showToast('Successfully saved text, image and video locally!', 'success');
+        showToast('Successfully saved profile, image and video locally!', 'success');
 
         // Reset form inputs & previews
         form.reset();
@@ -165,11 +375,11 @@ form.addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error('Submit error:', err);
-        showToast('Error: ' + err.message, 'error');
+        showToast(err.message || 'An error occurred while saving submission.', 'error');
     } finally {
         submitBtn.disabled = false;
         spinner.style.display = 'none';
-        submitText.textContent = 'Submit & Save to Local Files';
+        submitText.textContent = 'Submit & Save';
     }
 });
 
@@ -185,11 +395,15 @@ form.addEventListener('reset', () => {
 // Toast Notifications
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
-    toast.textContent = message;
+    if (!toast) return;
+    const cleanMsg = (typeof message === 'string' && message.length > 200)
+        ? message.substring(0, 197) + '...'
+        : message;
+    toast.textContent = cleanMsg;
     toast.className = `show ${type}`;
     setTimeout(() => {
         toast.className = '';
-    }, 4000);
+    }, 4500);
 }
 
 // Resolve full media file URL
@@ -209,8 +423,10 @@ async function loadSubmissions() {
 
         // Update count badges
         const count = currentSubmissions.length;
-        document.getElementById('submissionsCount').textContent = count;
-        document.getElementById('listCountLabel').textContent = `${count} submission${count === 1 ? '' : 's'}`;
+        const countBadge = document.getElementById('submissionsCount');
+        const countLabel = document.getElementById('listCountLabel');
+        if (countBadge) countBadge.textContent = count;
+        if (countLabel) countLabel.textContent = `${count} submission${count === 1 ? '' : 's'}`;
 
         renderSubmissionsList(currentSubmissions);
 
@@ -226,14 +442,17 @@ async function loadSubmissions() {
         }
     } catch (err) {
         console.error('Fetch error:', err);
-        document.getElementById('submissionsList').innerHTML =
-            `<div style="color:var(--muted); padding:12px; font-size:0.85rem;">Backend not connected or no submissions yet.</div>`;
+        const subList = document.getElementById('submissionsList');
+        if (subList) {
+            subList.innerHTML = `<div style="color:var(--muted); padding:12px; font-size:0.85rem;">Backend not connected or no submissions yet.</div>`;
+        }
     }
 }
 
 // Render Submissions list in sidebar
 function renderSubmissionsList(list) {
     const container = document.getElementById('submissionsList');
+    if (!container) return;
     if (!list || list.length === 0) {
         container.innerHTML = `<div style="color:var(--muted); padding:12px; font-size:0.85rem;">No submissions found.</div>`;
         return;
@@ -263,7 +482,9 @@ function renderSubmissionsList(list) {
 
 // Filter submissions dynamically
 function filterSubmissions() {
-    const q = document.getElementById('filterInput').value.toLowerCase().trim();
+    const filterInput = document.getElementById('filterInput');
+    if (!filterInput) return;
+    const q = filterInput.value.toLowerCase().trim();
     if (!q) {
         renderSubmissionsList(currentSubmissions);
         return;
@@ -285,8 +506,10 @@ async function selectSubmission(id) {
     document.querySelectorAll('.submission-item').forEach(el => el.classList.remove('active'));
     renderSubmissionsList(currentSubmissions);
 
-    document.getElementById('noSelectionMsg').style.display = 'none';
-    document.getElementById('selectionContent').style.display = 'block';
+    const noSelect = document.getElementById('noSelectionMsg');
+    const selectContent = document.getElementById('selectionContent');
+    if (noSelect) noSelect.style.display = 'none';
+    if (selectContent) selectContent.style.display = 'block';
 
     try {
         const res = await fetch(`${API_BASE}/api/v1/submissions/${id}`);
@@ -302,15 +525,15 @@ async function selectSubmission(id) {
 // Populate the detail panel with text, images, video, and local files
 function populateDetailView(data) {
     // Header
-    document.getElementById('detailName').textContent = data.fullName || 'Anonymous';
-    document.getElementById('detailEmail').textContent = data.email || 'No email';
-    document.getElementById('detailDate').textContent = data.createdAt ? new Date(data.createdAt).toLocaleString() : 'Recent';
-    document.getElementById('detailStatus').textContent = data.status || 'SUBMITTED';
+    setText('detailName', data.fullName || 'Anonymous');
+    setText('detailEmail', data.email || 'No email');
+    setText('detailDate', data.createdAt ? new Date(data.createdAt).toLocaleString() : 'Recent');
+    setText('detailStatus', data.status || 'SUBMITTED');
 
     // Local Storage paths
-    document.getElementById('pathTextFile').textContent = data.localDataFilePath || 'uploads/submissions/submission_' + data.id + '.json';
-    document.getElementById('pathImageFile').textContent = data.profilePhotoUrl || 'Not uploaded';
-    document.getElementById('pathVideoFile').textContent = data.introVideoUrl || 'Not uploaded';
+    setText('pathTextFile', data.localDataFilePath || 'uploads/submissions/submission_' + data.id + '.json');
+    setText('pathImageFile', data.profilePhotoUrl || 'Not uploaded');
+    setText('pathVideoFile', data.introVideoUrl || 'Not uploaded');
 
     // Image Display
     const imgEl = document.getElementById('detailImage');
@@ -319,15 +542,13 @@ function populateDetailView(data) {
 
     if (data.profilePhotoUrl) {
         const fullImgUrl = resolveFileUrl(data.profilePhotoUrl);
-        imgEl.src = fullImgUrl;
-        imgEl.style.display = 'block';
-        noImgMsg.style.display = 'none';
-        imgFooter.innerHTML = `<a href="${fullImgUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗 Open saved image in new tab</a>`;
+        if (imgEl) { imgEl.src = fullImgUrl; imgEl.style.display = 'block'; }
+        if (noImgMsg) noImgMsg.style.display = 'none';
+        if (imgFooter) imgFooter.innerHTML = `<a href="${fullImgUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗 Open saved image in new tab</a>`;
     } else {
-        imgEl.src = '';
-        imgEl.style.display = 'none';
-        noImgMsg.style.display = 'block';
-        imgFooter.innerHTML = '<span>No image file saved</span>';
+        if (imgEl) { imgEl.src = ''; imgEl.style.display = 'none'; }
+        if (noImgMsg) noImgMsg.style.display = 'block';
+        if (imgFooter) imgFooter.innerHTML = '<span>No image file saved</span>';
     }
 
     // Video Display & Playback
@@ -337,15 +558,13 @@ function populateDetailView(data) {
 
     if (data.introVideoUrl) {
         const fullVidUrl = resolveFileUrl(data.introVideoUrl);
-        vidEl.src = fullVidUrl;
-        vidEl.style.display = 'block';
-        noVidMsg.style.display = 'none';
-        vidFooter.innerHTML = `<a href="${fullVidUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗 Direct stream: ${escapeHtml(data.introVideoUrl)}</a>`;
+        if (vidEl) { vidEl.src = fullVidUrl; vidEl.style.display = 'block'; }
+        if (noVidMsg) noVidMsg.style.display = 'none';
+        if (vidFooter) vidFooter.innerHTML = `<a href="${fullVidUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗 Direct stream: ${escapeHtml(data.introVideoUrl)}</a>`;
     } else {
-        vidEl.src = '';
-        vidEl.style.display = 'none';
-        noVidMsg.style.display = 'block';
-        vidFooter.innerHTML = '<span>No video file saved</span>';
+        if (vidEl) { vidEl.src = ''; vidEl.style.display = 'none'; }
+        if (noVidMsg) noVidMsg.style.display = 'block';
+        if (vidFooter) vidFooter.innerHTML = '<span>No video file saved</span>';
     }
 
     // Personal & Contact Info
@@ -372,10 +591,12 @@ function populateDetailView(data) {
 
     // Colors
     setText('textFavColor', data.favouriteColor || '-');
-    document.getElementById('dotFav').style.backgroundColor = data.favouriteColor || 'transparent';
+    const dotFav = document.getElementById('dotFav');
+    if (dotFav) dotFav.style.backgroundColor = data.favouriteColor || 'transparent';
 
     setText('textHatedColor', data.hatedColor || '-');
-    document.getElementById('dotHate').style.backgroundColor = data.hatedColor || 'transparent';
+    const dotHate = document.getElementById('dotHate');
+    if (dotHate) dotHate.style.backgroundColor = data.hatedColor || 'transparent';
 
     // Bio
     setText('textBio', data.bio || 'No bio provided.');
@@ -383,22 +604,26 @@ function populateDetailView(data) {
     // Local JSON File Raw Content
     const rawBox = document.getElementById('rawJsonContent');
     const badge = document.getElementById('localFileNameBadge');
-    badge.textContent = data.localDataFilePath || '';
+    if (badge) badge.textContent = data.localDataFilePath || '';
 
-    if (data.localTextContent) {
-        rawBox.textContent = data.localTextContent;
-    } else {
-        // Fetch on-demand from local-file endpoint
-        fetch(`${API_BASE}/api/v1/submissions/${data.id}/local-file`)
-            .then(r => r.text())
-            .then(txt => { rawBox.textContent = txt; })
-            .catch(() => { rawBox.textContent = JSON.stringify(data, null, 2); });
+    if (rawBox) {
+        if (data.localTextContent) {
+            rawBox.textContent = data.localTextContent;
+        } else {
+            // Fetch on-demand from local-file endpoint
+            fetch(`${API_BASE}/api/v1/submissions/${data.id}/local-file`)
+                .then(r => r.text())
+                .then(txt => { rawBox.textContent = txt; })
+                .catch(() => { rawBox.textContent = JSON.stringify(data, null, 2); });
+        }
     }
 }
 
 function showEmptyDetail() {
-    document.getElementById('noSelectionMsg').style.display = 'block';
-    document.getElementById('selectionContent').style.display = 'none';
+    const noSelect = document.getElementById('noSelectionMsg');
+    const selectContent = document.getElementById('selectionContent');
+    if (noSelect) noSelect.style.display = 'block';
+    if (selectContent) selectContent.style.display = 'none';
 }
 
 function setText(id, val) {

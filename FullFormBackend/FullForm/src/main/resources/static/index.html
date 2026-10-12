@@ -3,65 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon"  type  = img/png href = "moviecam favicon.png">
+  <link rel="icon" type="image/png" href="images/moviecam%20favicon.png">
   <link rel="stylesheet" href="style.css">
-  <title>FullForm</title>
+  <title>FullForm - Actor Application Portal</title>
 </head>
-<body>
+<body class="auth-locked">
+
+  <!-- Authentication Modal Window Overlay -->
+  <div id="authOverlay" class="auth-overlay active" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="auth-window">
+      <div class="auth-header">
+        <div class="auth-badge">🎬</div>
+        <h2 id="authTitle">Actor Portal Sign In</h2>
+        <p id="authSubtitle">Enter your email and password to enter the application.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="authTabLogin" onclick="setAuthMode('login')">
+          Sign In
+        </button>
+        <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="setAuthMode('register')">
+          New Actor (Register)
+        </button>
+      </div>
+
+      <div id="authAlert" class="auth-alert" style="display: none;"></div>
+
+      <form id="authForm" novalidate onsubmit="handleAuthSubmit(event)">
+        <div class="field">
+          <label for="authEmail">Email Address *</label>
+          <input type="email" id="authEmail" name="authEmail" required placeholder="actor@example.com" autocomplete="email">
+          <div class="error-msg" id="authEmailErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="authPassword">Password *</label>
+          <input type="password" id="authPassword" name="authPassword" required minlength="6" placeholder="••••••••" autocomplete="current-password">
+          <div class="error-msg" id="authPasswordErr"></div>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="auth-submit-btn">
+          <span id="authSpinner" class="spinner" style="display: none;"></span>
+          <span id="authBtnText">Sign In & Enter Application</span>
+        </button>
+      </form>
+
+      <div class="auth-footer-toggle">
+        <span id="authToggleHint">New to the portal?</span>
+        <button type="button" id="authToggleBtn" class="link-btn" onclick="toggleAuthMode()">Register here</button>
+      </div>
+    </div>
+  </div>
 
   <!-- App Header -->
   <header class="app-header">
     <div class="header-container">
       <div class="logo-area">
         <div class="logo-badge">
-          <img src = "auditon logo.png" alt =" movieBadge">
-          </div>
+          <img src="images/auditon%20logo.png" alt="movieBadge">
+        </div>
         <div class="logo-title">
           <h1>Actor Application Portal</h1>
-          <p>This is an Actor Audition Form</p>
+          <p>Audition Registration & Profile Manager</p>
         </div>
       </div>
-      <nav class="nav-tabs">
-        <button type="button" class="tab-btn active" id="tabSubmitBtn" onclick="switchTab('submit')">
-          <span>Actor Audition Form</span>
-        </button>
-        <button type="button" class="tab-btn" id="tabViewBtn" onclick="switchTab('view')">
-          <span>View Submissions</span>
-          <span class="badge-count" id="submissionsCount">0</span>
-        </button>
-      </nav>
+
+      <div class="header-right-area">
+        <nav class="nav-tabs">
+          <button type="button" class="tab-btn active" id="tabSubmitBtn" onclick="switchTab('submit')">
+            <span>Actor Audition Form</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabViewBtn" onclick="switchTab('view')">
+            <span>View Submissions</span>
+            <span class="badge-count" id="submissionsCount">0</span>
+          </button>
+        </nav>
+
+        <div class="user-session-bar" id="userSessionBar" style="display: none;">
+          <span class="user-badge" id="userEmailBadge" title="Current Logged In Actor">👤 actor@example.com</span>
+          <button type="button" class="logout-btn" onclick="handleLogout()" title="Sign out of the portal">Sign Out</button>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="main-wrapper">
 
-    <!-- form tab -->
+    <!-- Form Tab -->
     <section id="submitTab" class="tab-content active">
       <form id="demoForm" novalidate enctype="multipart/form-data">
         <div class="form-header">
           <h2>Registration & Media Form</h2>
-          <p>Submit Writeups, Profile Pictures and  Audition Tapes.</p>
+          <p>Submit Writeups, Profile Pictures and Audition Tapes.</p>
         </div>
 
-        
+        <!-- 1. Personal & Contact Details (Only ProspectProfile fields) -->
         <fieldset>
           <legend><span>👤</span> Personal & Contact Details</legend>
           <div class="row">
             <div class="field">
               <label for="name">Full name *</label>
               <input type="text" id="name" name="name" required minlength="2" placeholder="e.g. Asha Kumar">
-              <div class="error-msg"></div>
-            </div>
-            <div class="field">
-              <label for="email">Email *</label>
-              <input type="email" id="email" name="email" required placeholder="e.g. asha@example.com">
-              <div class="error-msg"></div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="password">Password * (min 8 chars)</label>
-              <input type="password" id="password" name="password" required minlength="8" placeholder="••••••••">
               <div class="error-msg"></div>
             </div>
             <div class="field">
@@ -73,18 +115,17 @@
           <div class="row">
             <div class="field">
               <label for="website">Website</label>
-              <input type="url" id="website" name="website" placeholder="https://example.com(if u have one)">
+              <input type="url" id="website" name="website" placeholder="https://example.com (if you have one)">
               <div class="error-msg"></div>
             </div>
-            
           </div>
           <div class="field">
             <label for="bio">About you and your acting journey</label>
-            <textarea id="bio" name="bio" rows="3" maxlength="150" placeholder="A few lines about yourself(in 150 words)..."></textarea>
+            <textarea id="bio" name="bio" rows="3" maxlength="150" placeholder="A few lines about yourself (in 150 words)..."></textarea>
           </div>
         </fieldset>
 
-        
+        <!-- 2. Age, Colors & Skill -->
         <fieldset>
           <legend><span>🎨</span> Age, Colors & Skill</legend>
           <div class="row">
@@ -108,7 +149,7 @@
           </div>
         </fieldset>
 
-        
+        <!-- 3. Interview & Schedule Details -->
         <fieldset>
           <legend><span>📅</span> Book your In-person Interview with us</legend>
           <div class="row">
@@ -132,12 +173,12 @@
             </div>
           </div>
           <div class="field">
-            <label for="meeting"> Audition(date + time)</label>
+            <label for="meeting">Audition (date + time)</label>
             <input type="datetime-local" id="meeting" name="meeting">
           </div>
         </fieldset>
 
-        <!-- 4. Choices -->
+        <!-- 4. Choices & Preferences -->
         <fieldset>
           <legend><span>🎯</span> Preferences & Choices</legend>
           <div class="row">
@@ -156,7 +197,7 @@
               <div class="error-msg"></div>
             </div>
             <div class="field">
-              <label for="framework"> Most Favourite Field? </label>
+              <label for="framework">Most Favourite Field?</label>
               <input list="frameworks" id="framework" name="framework" placeholder="Type or pick...">
               <datalist id="frameworks">
                 <option value="Acting">
@@ -194,11 +235,10 @@
           </div>
         </fieldset>
 
-        
+        <!-- 5. Files / Media Uploads (All match ProspectProfile fields) -->
         <fieldset>
-          <legend><span>📁</span> Upload Profile Angles,Audition Video & Resume</legend>
+          <legend><span>📁</span> Upload Profile Angles, Audition Video & Resume</legend>
 
-          
           <div class="field">
             <label for="photo">Photo / Profile Image (JPEG, PNG, WebP)</label>
             <div class="file-input-wrapper">
@@ -210,7 +250,6 @@
             <div class="error-msg"></div>
           </div>
 
-          
           <div class="field">
             <label for="video">Video (MP4, WebM, MOV - saved locally)</label>
             <div class="file-input-wrapper">
@@ -222,7 +261,6 @@
             <div class="error-msg"></div>
           </div>
 
-          
           <div class="field">
             <label for="resume">Resume / Document (PDF, max 10MB)</label>
             <div class="file-input-wrapper">
@@ -231,14 +269,6 @@
             <div class="error-msg"></div>
           </div>
         </fieldset>
-
-        <div class="terms-container">
-          <div class="inline">
-            <input type="checkbox" id="terms" name="terms" required>
-            <label for="terms">I agree to save this information and local media files *</label>
-          </div>
-          <div class="error-msg" id="termsErr"></div>
-        </div>
 
         <div class="buttons">
           <button type="reset" id="resetBtn">Clear Form</button>
@@ -250,7 +280,7 @@
       </form>
     </section>
 
-    <!-- view submission tab -->
+    <!-- View Submissions Tab -->
     <section id="viewTab" class="tab-content">
       <div class="viewer-container">
         
@@ -316,9 +346,7 @@
               </div>
             </div>
 
-            
             <div class="media-showcase">
-              <
               <div class="media-card" id="cardImage">
                 <div class="media-card-header">
                   <span>🖼️ Saved Image</span>
@@ -329,14 +357,12 @@
                   <span id="noImageMsg" style="display:none; color:var(--muted); font-size:0.85rem;">No image uploaded</span>
                 </div>
                 <div class="media-card-footer" id="detailImageLink">
-                  
                 </div>
               </div>
 
-              
               <div class="media-card" id="cardVideo">
                 <div class="media-card-header">
-                  <span> Saved Video Player</span>
+                  <span>🎬 Saved Video Player</span>
                   <span id="videoStatusBadge" class="item-badge">Local Stream</span>
                 </div>
                 <div class="media-content">
@@ -344,7 +370,6 @@
                   <span id="noVideoMsg" style="display:none; color:var(--muted); font-size:0.85rem;">No video uploaded</span>
                 </div>
                 <div class="media-card-footer" id="detailVideoLink">
-                  
                 </div>
               </div>
             </div>
@@ -461,7 +486,7 @@
             <!-- Local JSON File Viewer -->
             <div class="info-section">
               <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                <span> Raw Content of Saved Local Text File</span>
+                <span>Raw Content of Saved Local Text File</span>
                 <span id="localFileNameBadge" style="font-size:0.75rem; color:var(--muted);"></span>
               </div>
               <div class="raw-json-box">

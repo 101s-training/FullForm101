@@ -42,14 +42,17 @@ public class SubmissionService {
     private final ProspectAuthRepository authRepository;
     private final ProspectProfileRepository profileRepository;
     private final FileStorageService storageService;
+    private final S3Service s3Service;
     private final ObjectMapper objectMapper;
 
     public SubmissionService(ProspectAuthRepository authRepository,
                              ProspectProfileRepository profileRepository,
-                             FileStorageService storageService) {
+                             FileStorageService storageService,
+                             S3Service s3Service) {
         this.authRepository = authRepository;
         this.profileRepository = profileRepository;
         this.storageService = storageService;
+        this.s3Service = s3Service;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -125,29 +128,49 @@ public class SubmissionService {
         profile.setInterests(interests != null ? String.join(", ", interests) : null);
         profile.setStatus(AuditionStatus.SUBMITTED);
 
-        // 4. Store uploaded files locally in the file system
+        // 4. Store uploaded files (S3 with local fallback if AWS credentials not configured)
         if (photo != null && !photo.isEmpty()) {
-            storageService.delete(profile.getProfilePhotoUrl());
-            String storedPath = storageService.store(photo, "images", ALLOWED_IMAGE_TYPES);
-            profile.setProfilePhotoUrl("/uploads/" + storedPath);
+            deleteOldMedia(profile.getProfilePhotoUrl());
+            try {
+                String key = s3Service.upload(photo, "images");
+                profile.setProfilePhotoUrl(key);
+            } catch (Exception e) {
+                String storedPath = storageService.store(photo, "images", ALLOWED_IMAGE_TYPES);
+                profile.setProfilePhotoUrl("/uploads/" + storedPath);
+            }
         }
 
         if (video != null && !video.isEmpty()) {
-            storageService.delete(profile.getIntroVideoUrl());
-            String storedPath = storageService.store(video, "videos", ALLOWED_VIDEO_TYPES);
-            profile.setIntroVideoUrl("/uploads/" + storedPath);
+            deleteOldMedia(profile.getIntroVideoUrl());
+            try {
+                String key = s3Service.upload(video, "videos");
+                profile.setIntroVideoUrl(key);
+            } catch (Exception e) {
+                String storedPath = storageService.store(video, "videos", ALLOWED_VIDEO_TYPES);
+                profile.setIntroVideoUrl("/uploads/" + storedPath);
+            }
         }
 
         if (resume != null && !resume.isEmpty()) {
-            storageService.delete(profile.getResumeUrl());
-            String storedPath = storageService.store(resume, "documents", ALLOWED_DOC_TYPES);
-            profile.setResumeUrl("/uploads/" + storedPath);
+            deleteOldMedia(profile.getResumeUrl());
+            try {
+                String key = s3Service.upload(resume, "documents");
+                profile.setResumeUrl(key);
+            } catch (Exception e) {
+                String storedPath = storageService.store(resume, "documents", ALLOWED_DOC_TYPES);
+                profile.setResumeUrl("/uploads/" + storedPath);
+            }
         }
 
         if (audio != null && !audio.isEmpty()) {
-            storageService.delete(profile.getAudioUrl());
-            String storedPath = storageService.store(audio, "audio", ALLOWED_AUDIO_TYPES);
-            profile.setAudioUrl("/uploads/" + storedPath);
+            deleteOldMedia(profile.getAudioUrl());
+            try {
+                String key = s3Service.upload(audio, "audio");
+                profile.setAudioUrl(key);
+            } catch (Exception e) {
+                String storedPath = storageService.store(audio, "audio", ALLOWED_AUDIO_TYPES);
+                profile.setAudioUrl("/uploads/" + storedPath);
+            }
         }
 
         // 5. Persist profile to database first to ensure ID is generated
@@ -239,11 +262,11 @@ public class SubmissionService {
         ProspectProfile profile = profileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Profile not found with id " + id));
 
+        deleteOldMedia(profile.getProfilePhotoUrl());
+        deleteOldMedia(profile.getIntroVideoUrl());
+        deleteOldMedia(profile.getResumeUrl());
+        deleteOldMedia(profile.getAudioUrl());
         try {
-            storageService.delete(profile.getProfilePhotoUrl());
-            storageService.delete(profile.getIntroVideoUrl());
-            storageService.delete(profile.getResumeUrl());
-            storageService.delete(profile.getAudioUrl());
             storageService.delete(profile.getLocalDataFilePath());
         } catch (IOException ignored) {
         }
@@ -252,6 +275,31 @@ public class SubmissionService {
         profileRepository.delete(profile);
         if (user != null) {
             authRepository.delete(user);
+        }
+    }
+
+    private void deleteOldMedia(String pathOrKey) {
+        if (pathOrKey == null || pathOrKey.isBlank() || "None".equalsIgnoreCase(pathOrKey)) {
+            return;
+        }
+        if (pathOrKey.startsWith("/uploads/")) {
+            try { storageService.delete(pathOrKey); } catch (Exception ignored) {}
+        } else {
+            try { s3Service.delete(pathOrKey); } catch (Exception ignored) {}
+        }
+    }
+
+    public String resolveViewUrl(String keyOrUrl) {
+        if (keyOrUrl == null || keyOrUrl.isBlank() || "None".equalsIgnoreCase(keyOrUrl)) {
+            return null;
+        }
+        if (keyOrUrl.startsWith("http://") || keyOrUrl.startsWith("https://") || keyOrUrl.startsWith("/uploads/")) {
+            return keyOrUrl;
+        }
+        try {
+            return s3Service.getViewUrl(keyOrUrl);
+        } catch (Exception e) {
+            return keyOrUrl;
         }
     }
 
@@ -279,10 +327,10 @@ public class SubmissionService {
                 .framework(p.getFramework())
                 .gender(p.getGender())
                 .interests(p.getInterests())
-                .profilePhotoUrl(p.getProfilePhotoUrl())
-                .introVideoUrl(p.getIntroVideoUrl())
-                .audioUrl(p.getAudioUrl())
-                .resumeUrl(p.getResumeUrl())
+                .profilePhotoUrl(resolveViewUrl(p.getProfilePhotoUrl()))
+                .introVideoUrl(resolveViewUrl(p.getIntroVideoUrl()))
+                .audioUrl(resolveViewUrl(p.getAudioUrl()))
+                .resumeUrl(resolveViewUrl(p.getResumeUrl()))
                 .localDataFilePath(p.getLocalDataFilePath())
                 .localTextContent(jsonContent)
                 .status(p.getStatus())

@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface ProspectAuthRepository extends JpaRepository<ProspectAuth,Long> {
     Optional<ProspectAuth> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
